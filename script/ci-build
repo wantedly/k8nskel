@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eu
+set -o pipefail
+
+cd "$(dirname $0)/.."
+
+echo "GOOS=linux GOARCH=amd64 make bin/k8nskel"
+GOOS=linux GOARCH=amd64 make bin/k8nskel
+
+echo "docker build -t ${REPO}:${TAG}"
+docker build -t $REPO:$TAG .

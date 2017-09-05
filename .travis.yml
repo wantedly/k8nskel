@@ -1,0 +1,30 @@
+language: go
+
+go:
+  - '1.8'
+
+services:
+  - docker
+
+env:
+  global:
+    - REPO=quay.io/wantedly/k8nskel
+    - BRANCH=$(echo $TRAVIS_BRANCH | sed -e 's/[^a-zA-Z0-9]/_/g')
+    - TAG=$BRANCH-${TRAVIS_COMMIT::8}
+
+cache:
+  directories:
+    - vendor
+
+install:
+  - make deps
+
+script:
+  - "./script/ci-build"
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: "./script/ci-deploy"
+  on:
+    branch: master
