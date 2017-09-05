@@ -1,6 +1,6 @@
 # k8nskel
 
-TODO: Add Travis CI badge
+[![Build Status](https://travis-ci.org/wantedly/k8nskel.svg?branch=master)](https://travis-ci.org/wantedly/k8nskel)
 
 Kubernetes Controller to distribute Secrets to new Namespace on Kubernetes.
 
