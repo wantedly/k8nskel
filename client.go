@@ -79,14 +79,16 @@ func (c *client) watchNamespaceEvents(ctx context.Context, wg *sync.WaitGroup) e
 				wg.Done()
 				return
 			case ev := <-watcher.ResultChan():
+				if ev.Object == nil {
+					// Closed because of error
+					return
+				}
+
 				if ev.Type != watch.Added {
 					continue
 				}
 
-				ns, ok := ev.Object.(*apiv1.Namespace)
-				if !ok {
-					continue
-				}
+				ns := ev.Object.(*apiv1.Namespace)
 
 				newNS := ns.ObjectMeta.Name
 
@@ -157,10 +159,12 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) erro
 				wg.Done()
 				return
 			case ev := <-watcher.ResultChan():
-				secret, ok := ev.Object.(*apiv1.Secret)
-				if !ok {
-					continue
+				if ev.Object == nil {
+					// Closed because of error
+					return
 				}
+
+				secret := ev.Object.(*apiv1.Secret)
 
 				namespaces, err := c.clientset.Namespaces().List(metav1.ListOptions{})
 				if err != nil {
