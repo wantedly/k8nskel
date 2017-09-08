@@ -43,14 +43,32 @@ func main() {
 	wg := new(sync.WaitGroup)
 
 	// Start watching of namespace events
-	if err := client.watchNamespaceEvents(ctx, wg); err != nil {
-		log.Fatalf("failed to start watching of namespace events: %s", err)
-	}
+	go func() {
+		for {
+			stop, err := client.watchNamespaceEvents(ctx, wg)
+			if err != nil {
+				log.Printf("failed to start watching of namespace events: %s\n", err)
+			}
+			if stop {
+				cancel()
+				break
+			}
+		}
+	}()
 
 	// Start watching of secret events
-	if err := client.watchSecretEvents(ctx, wg); err != nil {
-		log.Fatalf("failed to start watching of secret events: %s", err)
-	}
+	go func() {
+		for {
+			stop, err := client.watchSecretEvents(ctx, wg)
+			if err != nil {
+				log.Printf("failed to start watching of secret events: %s\n", err)
+			}
+			if stop {
+				cancel()
+				break
+			}
+		}
+	}()
 
 	sigCh := make(chan os.Signal, 1)
 	stopSignals := []os.Signal{
@@ -59,8 +77,10 @@ func main() {
 		syscall.SIGQUIT,
 	}
 	signal.Notify(sigCh, stopSignals...)
+	go func() {
+		<-sigCh
+		cancel()
+	}()
 
-	<-sigCh
-	cancel()
 	wg.Wait()
 }
