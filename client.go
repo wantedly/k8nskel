@@ -100,7 +100,7 @@ func (c *client) watchNamespaceEvents(ctx context.Context, wg *sync.WaitGroup) (
 
 			secrets, err := c.clientset.Secrets(c.origin).List(metav1.ListOptions{})
 			if err != nil {
-				log.Printf("failed to receive a secret list from '"+c.origin+"': %s\n", err)
+				log.Printf("failed to receive a secret list from '%s': %s", c.origin, err)
 				continue
 			}
 
@@ -120,11 +120,11 @@ func (c *client) watchNamespaceEvents(ctx context.Context, wg *sync.WaitGroup) (
 					Data: secret.Data,
 				})
 				if err != nil {
-					log.Printf("failed to copy a secret '"+secret.ObjectMeta.Name+"' from '"+c.origin+"' to "+newNS+": %s\n", err)
+					log.Printf("failed to copy a secret '%s' from '%s' to %s: %s", secret.ObjectMeta.Name, c.origin, newNS, err)
 					continue
 				}
 			}
-			log.Println("all secrets were copied from '" + c.origin + "' to '" + newNS + "'")
+			log.Printf("all secrets were copied from '%s' to '%s'", c.origin, newNS)
 		}
 	}
 }
@@ -165,7 +165,7 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 
 			namespaces, err := c.clientset.Namespaces().List(metav1.ListOptions{})
 			if err != nil {
-				log.Printf("failed to receive a namespace list: %s\n", err)
+				log.Printf("failed to receive a namespace list: %s", err)
 				continue
 			}
 			dests := []string{}
@@ -183,7 +183,7 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 					continue
 				}
 
-				log.Println("secret '" + secret.Name + "' ADDED in '" + c.origin + "'")
+				log.Printf("secret '%s' ADDED in '%s'", secret.Name, c.origin)
 
 				for _, dest := range dests {
 					_, err := c.clientset.Secrets(dest).Create(&apiv1.Secret{
@@ -195,13 +195,13 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 						Data: secret.Data,
 					})
 					if err != nil {
-						log.Printf("failed to copy a secret '"+secret.Name+"' from '"+c.origin+"' to "+dest+": %s\n", err)
+						log.Printf("failed to copy a secret '%s' from '%s' to '%s': %s", secret.Name, c.origin, dest, err)
 						continue
 					}
-					log.Println("secret '" + secret.Name + "' was copied from '" + c.origin + "' to '" + dest + "'")
+					log.Printf("secret '%s' was copied from '%s' to '%s'", secret.Name, c.origin, dest)
 				}
 			case watch.Modified:
-				log.Println("secret '" + secret.Name + "' MODIFIED in '" + c.origin + "'")
+				log.Printf("secret '%s' MODIFIED in '%s'", secret.Name, c.origin)
 
 				for _, dest := range dests {
 					_, err := c.clientset.Secrets(dest).Update(&apiv1.Secret{
@@ -213,21 +213,21 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 						Data: secret.Data,
 					})
 					if err != nil {
-						log.Printf("failed to update a secret '"+secret.Name+"' in "+dest+": %s\n", err)
+						log.Printf("failed to update a secret '%s' in '%s': %s", secret.Name, dest, err)
 						continue
 					}
-					log.Println("secret '" + secret.Name + "' was updated in '" + dest + "'")
+					log.Printf("secret '%s' was updated in '%s'", secret.Name, dest)
 				}
 			case watch.Deleted:
-				log.Println("secret '" + secret.Name + "' DELETED in'" + c.origin + "'")
+				log.Printf("secret '%s' DELETED in'%s'", secret.Name, c.origin)
 
 				for _, dest := range dests {
 					err := c.clientset.Secrets(dest).Delete(secret.Name, &metav1.DeleteOptions{})
 					if err != nil {
-						log.Printf("failed to delete a secret '"+secret.Name+"' in "+dest+": %s\n", err)
+						log.Printf("failed to delete a secret '%s' in '%s': %s", secret.Name, dest, err)
 						continue
 					}
-					log.Println("secret '" + secret.Name + "' was deleted in '" + dest + "'")
+					log.Printf("secret '%s' was deleted in '%s'", secret.Name, dest)
 				}
 			}
 		}

@@ -36,7 +36,7 @@ func main() {
 
 	client, err := newClient(k8nskelOrigin, k8nskelIgnoreDest)
 	if err != nil {
-		log.Fatalf("failed to initialize Kubernetes API client: %s\n", err)
+		log.Fatalf("failed to initialize Kubernetes API client: %s", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -47,7 +47,7 @@ func main() {
 		for {
 			stop, err := client.watchNamespaceEvents(ctx, wg)
 			if err != nil {
-				log.Printf("failed to start watching of namespace events: %s\n", err)
+				log.Printf("failed to start watching of namespace events: %s", err)
 			}
 			if stop {
 				cancel()
@@ -61,7 +61,7 @@ func main() {
 		for {
 			stop, err := client.watchSecretEvents(ctx, wg)
 			if err != nil {
-				log.Printf("failed to start watching of secret events: %s\n", err)
+				log.Printf("failed to start watching of secret events: %s", err)
 			}
 			if stop {
 				cancel()
