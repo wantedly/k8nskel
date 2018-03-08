@@ -7,10 +7,10 @@ import (
 	"strings"
 	"sync"
 
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -63,7 +63,7 @@ func (c *client) watchNamespaceEvents(ctx context.Context, wg *sync.WaitGroup) (
 
 	// ADDED events are also notified for namespaces that already exist at startup.
 	// Therefore, necessary to ignore this notification only at startup.
-	namespaces, err := c.clientset.Namespaces().List(metav1.ListOptions{})
+	namespaces, err := c.clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
 	if err != nil {
 		return true, fmt.Errorf("failed to receive a namespace list: %s", err)
 	}
@@ -98,7 +98,7 @@ func (c *client) watchNamespaceEvents(ctx context.Context, wg *sync.WaitGroup) (
 				continue
 			}
 
-			secrets, err := c.clientset.Secrets(c.origin).List(metav1.ListOptions{})
+			secrets, err := c.clientset.CoreV1().Secrets(c.origin).List(metav1.ListOptions{})
 			if err != nil {
 				log.Printf("failed to receive a secret list from '%s': %s", c.origin, err)
 				continue
@@ -111,7 +111,7 @@ func (c *client) watchNamespaceEvents(ctx context.Context, wg *sync.WaitGroup) (
 					continue
 				}
 
-				_, err := c.clientset.Secrets(newNS).Create(&apiv1.Secret{
+				_, err := c.clientset.CoreV1().Secrets(newNS).Create(&apiv1.Secret{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      secret.ObjectMeta.Name,
 						Namespace: newNS,
@@ -140,7 +140,7 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 
 	// ADDED events are also notified for secrets that already exist at startup.
 	// Therefore, necessary to ignore this notification only at startup.
-	secrets, err := c.clientset.Secrets(c.origin).List(metav1.ListOptions{})
+	secrets, err := c.clientset.CoreV1().Secrets(c.origin).List(metav1.ListOptions{})
 	if err != nil {
 		return true, fmt.Errorf("failed to receive a secret list: %s", err)
 	}
@@ -163,7 +163,7 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 
 			secret := ev.Object.(*apiv1.Secret)
 
-			namespaces, err := c.clientset.Namespaces().List(metav1.ListOptions{})
+			namespaces, err := c.clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
 			if err != nil {
 				log.Printf("failed to receive a namespace list: %s", err)
 				continue
@@ -186,7 +186,7 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 				log.Printf("secret '%s' ADDED in '%s'", secret.Name, c.origin)
 
 				for _, dest := range dests {
-					_, err := c.clientset.Secrets(dest).Create(&apiv1.Secret{
+					_, err := c.clientset.CoreV1().Secrets(dest).Create(&apiv1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      secret.Name,
 							Namespace: dest,
@@ -204,7 +204,7 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 				log.Printf("secret '%s' MODIFIED in '%s'", secret.Name, c.origin)
 
 				for _, dest := range dests {
-					_, err := c.clientset.Secrets(dest).Update(&apiv1.Secret{
+					_, err := c.clientset.CoreV1().Secrets(dest).Update(&apiv1.Secret{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      secret.Name,
 							Namespace: dest,
@@ -222,7 +222,7 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 				log.Printf("secret '%s' DELETED in'%s'", secret.Name, c.origin)
 
 				for _, dest := range dests {
-					err := c.clientset.Secrets(dest).Delete(secret.Name, &metav1.DeleteOptions{})
+					err := c.clientset.CoreV1().Secrets(dest).Delete(secret.Name, &metav1.DeleteOptions{})
 					if err != nil {
 						log.Printf("failed to delete a secret '%s' in '%s': %s", secret.Name, dest, err)
 						continue
