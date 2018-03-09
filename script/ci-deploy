@@ -7,7 +7,7 @@ cd "$(dirname $0)/.."
 
 if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
   echo "docker login"
-  docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io
+  docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io
 
   echo "docker tag ${REPO}:${TAG} ${REPO}:latest"
   docker tag $REPO:$TAG $REPO:latest
