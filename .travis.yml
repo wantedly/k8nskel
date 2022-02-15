@@ -1,7 +1,7 @@
 language: go
 
 go:
-  - '1.9'
+  - '1.17'
 
 services:
   - docker
@@ -16,7 +16,7 @@ env:
 
 cache:
   directories:
-    - vendor
+  - $GOPATH/pkg/mod
 
 install:
   - make deps
