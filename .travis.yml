@@ -16,7 +16,7 @@ env:
 
 cache:
   directories:
-    - vendor
+  - $GOPATH/pkg/mod
 
 install:
   - make deps
