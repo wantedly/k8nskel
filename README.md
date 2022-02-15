@@ -29,6 +29,7 @@ Docker image is available at [`quay.io/wantedly/k8nskel`](https://quay.io/reposi
 |-|-|-|
 |K8NSKEL_ORIGIN|Name of the namespace from which the secret is copied.|"k8nskel-origin"|
 |K8NSKEL_IGNORE_DEST|CSV list of namespaces that does not reflect secrets in `K8NSKEL_ORIGIN` is added/modified/deleted. It is not reflected in `K8NSKEL_ORIGIN` by default.|"kube-public,kube-system"|
+|K8NSKEL_EXCLUDE_SECRETS|CSV list of secrets that does not reflect secrets in `K8NSKEL_ORIGIN` is added/modified/deleted. If this value empty, k8nskell sync all secrets in `K8NSKEL_ORIGIN` |""|
 
 ## Usage
 

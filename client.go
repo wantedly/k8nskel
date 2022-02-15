@@ -23,10 +23,14 @@ type client struct {
 
 	// ignoreDest is K8NSKEL_IGNORE_DEST environment value
 	ignoreDests map[string]int
+
+	// excludeSecrets contains excluding Secrets name.
+	// this value is from K8NSKEL_EXCLUDE_SECRETS environment value.
+	excludeSecrets map[string]struct{}
 }
 
 // newClient creates client object
-func newClient(origin, ignoreDestCSV string) (*client, error) {
+func newClient(origin, ignoreDestCSV, excludeSecretsCSV string) (*client, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load in-cluster config: %s", err)
@@ -45,10 +49,17 @@ func newClient(origin, ignoreDestCSV string) (*client, error) {
 		ignoreDests[dest] = 0 // meaningless value
 	}
 
+	es := strings.Split(excludeSecretsCSV, ",")
+	excludeSecrets := make(map[string]struct{}, len(es))
+	for _, secret := range es {
+		excludeSecrets[secret] = struct{}{}
+	}
+
 	return &client{
-		clientset:   clientset,
-		origin:      origin,
-		ignoreDests: ignoreDests,
+		clientset:      clientset,
+		origin:         origin,
+		ignoreDests:    ignoreDests,
+		excludeSecrets: excludeSecrets,
 	}, nil
 }
 
@@ -146,6 +157,9 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 	}
 	existingSecrets := map[string]int{}
 	for _, secret := range secrets.Items {
+		if _, ok := c.excludeSecrets[secret.ObjectMeta.Name]; ok {
+			continue
+		}
 		existingSecrets[secret.ObjectMeta.Name] = 0 // meaningless value
 	}
 
@@ -162,6 +176,11 @@ func (c *client) watchSecretEvents(ctx context.Context, wg *sync.WaitGroup) (sto
 			}
 
 			secret := ev.Object.(*apiv1.Secret)
+
+			// Skip to sync a secret when contains excluding lists
+			if _, ok := c.excludeSecrets[secret.Name]; ok {
+				continue
+			}
 
 			namespaces, err := c.clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
 			if err != nil {
