@@ -19,6 +19,13 @@ const (
 
 	// defaultTokenPrefix is prefix of default token in secret
 	defaultTokenPrefix = "default-token-"
+
+	// ignoreSecretsEnvKey is key of the environment variable that contains excluding Secrets.
+	// the value expects a comma-separated list of Secret names.
+	excludeSecretsEnvKey = "K8NSKEL_EXCLUDE_SECRETS"
+
+	// defaultExcludeSecrets is default value of excluding Secrets list.
+	defaultExcludeSecrets = ""
 )
 
 func main() {
@@ -34,7 +41,13 @@ func main() {
 		k8nskelIgnoreDest = v
 	}
 
-	client, err := newClient(k8nskelOrigin, k8nskelIgnoreDest)
+	// Get exclude Secret lists from environment value
+	excludeSecrets := defaultExcludeSecrets
+	if v, ok := os.LookupEnv("K8NSKEL_EXCLUDE_SECRETS"); ok {
+		excludeSecrets = v
+	}
+
+	client, err := newClient(k8nskelOrigin, k8nskelIgnoreDest, excludeSecrets)
 	if err != nil {
 		log.Fatalf("failed to initialize Kubernetes API client: %s", err)
 	}
