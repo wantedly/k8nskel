@@ -1,6 +1,6 @@
 module github.com/wantedly/k8nskel
 
-go 1.17
+go 1.19
 
 require (
 	k8s.io/api v0.0.0-20180308023924-fd252c3a3e1d
