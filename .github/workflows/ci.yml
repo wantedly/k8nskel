@@ -17,7 +17,7 @@ jobs:
       - name: Build
         run: script/ci-build
       - name: Push
-        run: script/ci-push
+        run: script/ci-deploy
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
