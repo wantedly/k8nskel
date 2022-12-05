@@ -1,0 +1,24 @@
+name: CI
+on: [push]
+env:
+  REPO: quay.io/wantedly/k8nskel
+  TAG: ${{ github.sha }}
+jobs:
+
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          check-latest: true
+          cache: true
+      - name: Build
+        run: script/ci-build
+      - name: Push
+        run: script/ci-push
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
