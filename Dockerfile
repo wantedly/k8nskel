@@ -1,3 +1,3 @@
-FROM alpine:3.6
+FROM alpine:3.17
 COPY ./bin/k8nskel /k8nskel
 ENTRYPOINT /k8nskel
